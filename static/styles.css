@@ -1,0 +1,27 @@
+.project-description {
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.project-description h2 {
+    margin-bottom: 1rem;
+}
+
+.field-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+#course-form {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+#course-form input, #course-form select, #course-form button {
+    margin: 0.5rem;
+}
