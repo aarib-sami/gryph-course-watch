@@ -1,0 +1,30 @@
+.project-description {
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .project-description h2 {
+    margin-bottom: 1rem;
+  }
+  
+  .field-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+  }
+  
+  .confirm-button {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .form-control-sm {
+    font-size: 0.875rem; /* Smaller font size for smaller inputs */
+  }
+  
+  .w-25 {
+    max-width: 25%;
+  }
+  
