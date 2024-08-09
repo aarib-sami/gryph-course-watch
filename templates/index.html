@@ -20,7 +20,7 @@
         </div>
 
         <div class="field-container">
-            <form id="course-form" class=" justify-content-center">
+            <form id="course-form" class="justify-content-center">
                 <select class="form-select me-2 w-25" id="semester-dropdown" aria-label="Semester Section">
                   <option selected>Select Semester</option>
                   <option>Fall</option>
@@ -31,18 +31,18 @@
                 <select class="form-select me-2 w-25" id="section-dropdown" aria-label="Course Section">
                     <option selected>Select Section</option>
                 </select>
-                <div class = "email-submit-button">
+                <div class="email-submit-button">
                   <input type="email" class="form-control me-2 w-100" id="email" placeholder="Your Email" aria-label="Email">
-                  <button class="btn btn-primary" type="submit">Notify Me!</button>
+                  <button class="btn btn-primary" id="submit" type="submit" disabled>Notify Me!</button>
                 </div>
-                
             </form>
         </div>
         
         <div id="loading-spinner" class="text-center mt-3" style="display: none;">
-            <div class="spinner-border" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
+          <div class="spinner-border" role="status">
+              <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-2">This will take a moment, server is cooking...</p> <!-- Added text below the spinner -->
         </div>
 
         <div id="warning-message" class="text-center mt-3" style="display: none;">
@@ -50,38 +50,93 @@
                 No sections found for this course code during the selected semester.
             </div>
         </div>
-    </main>
 
+        <div id="warning-message1" class="text-center mt-3" style="display: none;">
+          <div class="alert alert-warning" role="alert">
+              There are already seats available for this section.
+          </div>
+        </div>
+    </main>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    
     <script>
       document.getElementById('course-code').disabled = true;
       document.getElementById('section-dropdown').disabled = true;
       document.getElementById('email').disabled = true;
-    </script>
-    
-    
-    <script>
+      document.getElementById('submit').disabled = true;
+
+      function checkFields() {
+        const semester = document.getElementById('semester-dropdown').value;
+        const courseCode = document.getElementById('course-code').value;
+        const section = document.getElementById('section-dropdown').value;
+        const email = document.getElementById('email').value;
+
+        const allFieldsFilled = semester !== 'Select Semester' && courseCode !== '' && section !== 'Select Section' && email !== '';
+
+        document.getElementById('submit').disabled = !allFieldsFilled;
+      }
+
       document.getElementById('semester-dropdown').addEventListener('input', function() {
         const semester = this.value;
+        const courseCode = document.getElementById('course-code').value;
+        const sectionDropdown = document.getElementById('section-dropdown');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const warningMessage = document.getElementById('warning-message');
+
         if (semester === 'Select Semester') {
           document.getElementById('course-code').value = "";
-          document.getElementById('section-dropdown').value = "Select Section";
-          document.getElementById('email').disabled.value = "";
+          document.getElementById('section-dropdown').innerHTML = '<option selected>Select Section</option>';
+          document.getElementById('email').value = "";
 
           document.getElementById('course-code').disabled = true;
           document.getElementById('section-dropdown').disabled = true;
           document.getElementById('email').disabled = true;
-        } 
-        else {
+        } else {
           document.getElementById('course-code').disabled = false;
           document.getElementById('section-dropdown').disabled = false;
           document.getElementById('email').disabled = false;
-        }
-      });
-    </script>
 
-    
-    <script>
+          if (/.*\*\d{4}$/.test(courseCode)) {
+            loadingSpinner.style.display = 'block';
+            sectionDropdown.disabled = true;
+            warningMessage.style.display = 'none'; // Hide warning message initially
+            document.getElementById('course-code').disabled = true;
+
+            fetch(`/sections?course_code=${courseCode}&selectedSemester=${semester}`)
+                .then(response => response.json())
+                .then(sections => {
+                    if (sections.length === 0) {
+                      warningMessage.style.display = 'block'; // Show warning message on error
+                      setTimeout(() => {
+                      warningMessage.style.display = 'none';
+                      }, 5000);  
+                      semesterDropdown.value = 'Select Semester';
+                    } else {
+                        sectionDropdown.innerHTML = '<option selected>Select Section</option>';
+                        sections.forEach(section => {
+                            const option = document.createElement('option');
+                            option.value = section;
+                            option.textContent = section;
+                            sectionDropdown.appendChild(option);
+                        });
+                        sectionDropdown.disabled = false;
+                       
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching sections:', error);
+                    
+                })
+                .finally(() => {
+                    loadingSpinner.style.display = 'none';
+                    document.getElementById('course-code').disabled = false;
+                });
+          }
+        }
+        checkFields();
+      });
+
       document.getElementById('course-code').addEventListener('input', function() {
         const courseCode = this.value;
         const sectionDropdown = document.getElementById('section-dropdown');
@@ -100,10 +155,12 @@
                 .then(response => response.json())
                 .then(sections => {
                     if (sections.length === 0) {
-                        warningMessage.style.display = 'block'; // Show warning message
-                        sectionDropdown.innerHTML = '<option selected>Select Section</option>';
+                      warningMessage.style.display = 'block'; // Show warning message
+                      setTimeout(() => {
+                      warningMessage.style.display = 'none';
+                      }, 5000); 
+                      semesterDropdown.value = 'Select Semester';
                     } else {
-                        sectionDropdown.innerHTML = '<option selected>Select Section</option>';
                         sections.forEach(section => {
                             const option = document.createElement('option');
                             option.value = section;
@@ -111,12 +168,10 @@
                             sectionDropdown.appendChild(option);
                         });
                         sectionDropdown.disabled = false;
-                        warningMessage.style.display = 'none'; // Hide warning message
                     }
                 })
                 .catch(error => {
                     console.error('Error fetching sections:', error);
-                    warningMessage.style.display = 'block'; // Show warning message on error
                 })
                 .finally(() => {
                     loadingSpinner.style.display = 'none';
@@ -126,10 +181,55 @@
             sectionDropdown.innerHTML = '<option selected>Select Section</option>';
             sectionDropdown.disabled = true;
             loadingSpinner.style.display = 'none';
-            warningMessage.style.display = 'none'; // Hide warning message
         }
+        checkFields();
       });
-    </script>
 
+      document.getElementById('section-dropdown').addEventListener('input', checkFields);
+      document.getElementById('email').addEventListener('input', checkFields);
+
+      document.getElementById('course-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        const courseCode = document.getElementById('course-code').value;
+        const sectionCode = document.getElementById('section-dropdown').value;
+        const email = document.getElementById('email').value;
+        const semester = document.getElementById('semester-dropdown').value;
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const warningMessage1 = document.getElementById('warning-message1');
+
+        loadingSpinner.style.display = 'block';
+        warningMessage1.style.display = 'none'; // Hide warning message initially
+
+        fetch('/notify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ courseCode, sectionCode, email, semester })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                warningMessage1.style.display = 'block';
+                setTimeout(() => {
+                warningMessage1.style.display = 'none';
+                }, 5000);
+            } else {
+                alert(data.message || 'Notification setup successful');
+            }
+            // Clear all fields
+            document.getElementById('course-code').value = '';
+            document.getElementById('section-dropdown').innerHTML = '<option selected>Select Section</option>';
+            document.getElementById('email').value = '';
+            document.getElementById('semester-dropdown').value = 'Select Semester';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        })
+        .finally(() => {
+            loadingSpinner.style.display = 'none';
+        });
+      });
+
+    </script>
 </body>
 </html>
