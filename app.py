@@ -1,9 +1,4 @@
 from flask import Flask, request, jsonify, render_template
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime
 import threading
 import time
@@ -152,6 +147,7 @@ def check_seat_availability(course_code, section_code, selectedSemester):
                     if courseCode.text_content().strip() == section_code:
                         availabilityText = section.query_selector('.search-seatsavailabletext')
                         availability = availabilityText.text_content().strip().split(' / ')[0]
+                        print(availability)
                         return availability
                         
         browser.close()
