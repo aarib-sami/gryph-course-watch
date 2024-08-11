@@ -11,6 +11,10 @@ import smtplib
 from email.mime.text import MIMEText
 import os
 from dotenv import load_dotenv
+from playwright.sync_api import sync_playwright
+import re
+from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
+
 
 load_dotenv()
 
@@ -61,84 +65,96 @@ def notify():
 
     return jsonify({"message": "Notification setup successful"})
 
+def escape_css_selector(value):
+    """Escape special characters for use in a CSS selector."""
+    return re.sub(r'([ #!$%&\'()*+,.\/:;<=>?@[\]^`{|}~])', r'\\\1', value)
+
 def fetch_course_sections(course_code, selected_semester):
     url = f'https://colleague-ss.uoguelph.ca/Student/Courses/Search?keyword={course_code}'
-    
-    options = Options()
-    options.headless = True
-    options.add_argument('--disable-gpu')
-    driver = webdriver.Chrome(options=options)
-    
-    try:
-        driver.get(url)
-        wait = WebDriverWait(driver, 20)
-        
-        button_id = 'collapsible-view-available-sections-for-' + course_code + '-groupHeading'
-        button = wait.until(EC.element_to_be_clickable((By.ID, button_id)))
-        button.click()
-        
-        semester_headers = wait.until(
-            EC.presence_of_all_elements_located((By.XPATH, "//div[@data-bind='foreach: TermsAndSections']/h4[@data-bind='text: $data.Term.Description()']"))
-        )
+    sectionsList = []
 
-        sections = []
-        for header in semester_headers:
-            semester_text = header.text.strip()
-            if semester_text == selected_semester + " " + str(datetime.now().year):
-                section_list = header.find_element(By.XPATH, "following-sibling::ul[@data-bind='foreach: Sections']")
-                
-                section_items = section_list.find_elements(By.CLASS_NAME, 'search-nestedaccordionitem')
-                
-                for item in section_items:
-                    section = item.find_element(By.CLASS_NAME, 'search-sectiondetailslink').text.strip()
-                    sections.append(section)
-        
-        return sections
+    # Escape the special characters in the course code for the CSS selector
+    escaped_course_code = escape_css_selector(course_code)
     
-    finally:
-        driver.quit()
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+        page.goto(url)
+        
+        # Wait for the button to be clickable and click it
+        button_selector = f'#collapsible-view-available-sections-for-{escaped_course_code}-groupHeading'
+        
+        try:
+            # Attempt to find and click the button
+            page.wait_for_selector(button_selector, state='visible', timeout=5000)
+            page.click(button_selector)
+        except PlaywrightTimeoutError:
+            browser.close()
+            return sectionsList
+        
+        # Wait for the section items to be loaded
+        try:
+            # Attempt to find sections
+            page.wait_for_selector('ul[data-bind="foreach: Sections"]', timeout=5000)
+        except PlaywrightTimeoutError:
+            browser.close()
+            return sectionsList
 
-def check_seat_availability(course_code, section_code, semester):
+
+        # Find the semester text
+        sectionSemester = page.query_selector_all('h4[data-bind="text: $data.Term.Description()"]')
+
+        # Go through each semester text, compare with desired semester
+        for semester in sectionSemester:
+            if semester.text_content().strip() == selected_semester + " " + str(datetime.now().year):
+                # Locate the course sections within the desired semester
+                semesterSection = semester.query_selector('xpath=following-sibling::ul[@data-bind="foreach: Sections"]')
+                # Have variable for each course
+                sections = semesterSection.query_selector_all('.search-nestedaccordionitem')
+                for section in sections:
+                    courseCode = section.query_selector('.search-sectiondetailslink')
+                    sectionsList.append(courseCode.text_content().strip())
+        
+        return sectionsList
+        browser.close()
+
+def check_seat_availability(course_code, section_code, selectedSemester):
     url = f'https://colleague-ss.uoguelph.ca/Student/Courses/Search?keyword={course_code}'
-    
-    options = Options()
-    options.headless = True
-    options.add_argument('--disable-gpu')
-    driver = webdriver.Chrome(options=options)
-    
-    try:
-        driver.get(url)
-        wait = WebDriverWait(driver, 20)
-        
-        button_id = 'collapsible-view-available-sections-for-' + course_code + '-groupHeading'
-        button = wait.until(EC.element_to_be_clickable((By.ID, button_id)))
-        button.click()
-        
-        semester_headers = wait.until(
-            EC.presence_of_all_elements_located((By.XPATH, "//div[@data-bind='foreach: TermsAndSections']/h4[@data-bind='text: $data.Term.Description()']"))
-        )
-        
-        for header in semester_headers:
-            semester_text = header.text.strip()
-            if semester_text == semester + " " + str(datetime.now().year):
-                section_list = header.find_element(By.XPATH, "following-sibling::ul[@data-bind='foreach: Sections']")
-                
-                section_items = section_list.find_elements(By.CLASS_NAME, 'search-nestedaccordionitem')
-                
-                for item in section_items:
-                    section = item.find_element(By.CLASS_NAME, 'search-sectiondetailslink').text.strip()
-                    if section == section_code:
-                        seat_availability = item.find_elements(By.CLASS_NAME, 'search-seatsavailabletext')
-                        
-                        for availability in seat_availability:
-                            if availability.is_displayed():
-                                availability_data = availability.text.strip().split(' / ')[0]
-                        return availability_data
 
-        return {"error": "Section not found"}
+    # Escape the special characters in the course code for the CSS selector
+    escaped_course_code = escape_css_selector(course_code)
     
-    finally:
-        driver.quit()  
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+        page.goto(url)
+        
+        # Wait for the button to be clickable and click it
+        button_selector = f'#collapsible-view-available-sections-for-{escaped_course_code}-groupHeading'
+        page.wait_for_selector(button_selector, state='visible', timeout=5000)
+        page.click(button_selector)
+
+        # Wait for the section items to be loaded
+        page.wait_for_selector('ul[data-bind="foreach: Sections"]', timeout=10000)
+        
+        # Find the semester text
+        sectionSemester = page.query_selector_all('h4[data-bind="text: $data.Term.Description()"]')
+
+        # Go through each semester text, compare with desired semester
+        for semester in sectionSemester:
+            if semester.text_content().strip() == selectedSemester + " " + str(datetime.now().year):
+                # Locate the course sections within the desired semester
+                semesterSection = semester.query_selector('xpath=following-sibling::ul[@data-bind="foreach: Sections"]')
+                # Have variable for each course
+                sections = semesterSection.query_selector_all('.search-nestedaccordionitem')
+                for section in sections:
+                    courseCode = section.query_selector('.search-sectiondetailslink')
+                    if courseCode.text_content().strip() == section_code:
+                        availabilityText = section.query_selector('.search-seatsavailabletext')
+                        availability = availabilityText.text_content().strip().split(' / ')[0]
+                        return availability
+                        
+        browser.close()
 
 def periodically_check(course_code, section_code, semester, email):
     while True:
