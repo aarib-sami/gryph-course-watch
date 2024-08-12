@@ -13,6 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Install Playwright and its browsers
 RUN pip install playwright
 RUN playwright install
+RUN playwright install-deps  
 
 # Install system dependencies required by Playwright
 RUN apt-get update && \
