@@ -1,14 +1,15 @@
-# Use an official Python runtime as a parent image
-FROM python:3.11-slim
-
-# Set the working directory in the container
-WORKDIR /app
-
 # Copy the requirements file into the container at /app
 COPY requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Install Playwright and its browsers
+RUN pip install playwright
+RUN playwright install
+
+RUN npx playwright install
+
 
 # Install system dependencies required by Playwright
 RUN apt-get update && \
