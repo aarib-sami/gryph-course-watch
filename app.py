@@ -201,4 +201,4 @@ def send_email_notification(email, course_code, section_code, semester, availabi
         print(f"Failed to send email: {e}")
 
 if __name__ == '__main__':
-    app.run(debug=True)
+     app.run(host='0.0.0.0', port=8080)
