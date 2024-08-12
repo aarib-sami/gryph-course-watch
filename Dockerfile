@@ -42,7 +42,7 @@ COPY . /app/
 RUN playwright install
 
 # Expose the port your application will run on
-EXPOSE 8000
+EXPOSE 0000
 
 # Command to run the application
 CMD ["gunicorn", "-b", "0.0.0.0:8000", "app:app"]
