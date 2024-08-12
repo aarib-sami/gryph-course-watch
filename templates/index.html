@@ -106,7 +106,7 @@
             fetch(`/sections?course_code=${courseCode}&selectedSemester=${semester}`)
                 .then(response => response.json())
                 .then(sections => {
-                    if (sections.length === 0) {
+                    if (sections.length) {
                       warningMessage.style.display = 'block'; // Show warning message on error
                       setTimeout(() => {
                       warningMessage.style.display = 'none';
