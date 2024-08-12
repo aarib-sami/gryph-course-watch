@@ -48,7 +48,7 @@ def notify():
     availability = check_seat_availability(course_code, section_code, semester)
 
     if int(availability) > 0:
-        print("Seats are available for this section")
+        print("Seats are available for this section", flush=True)
         return jsonify({"error": "There are already seats available for this section"}), 400
 
     # Send confirmation email
@@ -147,7 +147,7 @@ def check_seat_availability(course_code, section_code, selectedSemester):
                     if courseCode.text_content().strip() == section_code:
                         availabilityText = section.query_selector('.search-seatsavailabletext')
                         availability = availabilityText.text_content().strip().split(' / ')[0]
-                        print(availability)
+                        print(availability, flush=True)
                         return availability
                         
         browser.close()
@@ -157,7 +157,7 @@ def periodically_check(course_code, section_code, semester, email):
         availability = check_seat_availability(course_code, section_code, semester)
         if int(availability) > 0:
             send_email_notification(email, course_code, section_code, semester, availability)
-            print("Spot found")
+            print("Spot found", flush=True)
             break
         time.sleep(15)  # Check every (interval) minutes or whatever
 
@@ -175,11 +175,11 @@ def send_confirmation_email(email, course_code, section_code, semester):
             server.starttls()  # Upgrade the connection to a secure encrypted SSL/TLS connection
             server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)  
             server.send_message(msg)  # Send the email message
-        print("Confirmation email sent successfully")
+        print("Confirmation email sent successfully", flush=True)
     except smtplib.SMTPAuthenticationError:
-        print("Failed to authenticate. Check your email and password or App Password.")
+        print("Failed to authenticate. Check your email and password or App Password.", flush=True)
     except Exception as e:
-        print(f"Failed to send confirmation email: {e}")
+        print(f"Failed to send confirmation email: {e}, flush=True")
 
 def send_email_notification(email, course_code, section_code, semester, availability):
     # Prepare the email message
@@ -194,11 +194,11 @@ def send_email_notification(email, course_code, section_code, semester, availabi
             server.starttls()  # Upgrade the connection to a secure encrypted SSL/TLS connection
             server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)  
             server.send_message(msg)  
-        print("Email sent successfully")
+        print("Email sent successfully, flush=True")
     except smtplib.SMTPAuthenticationError:
-        print("Failed to authenticate. Check your email and password or App Password.")
+        print("Failed to authenticate. Check your email and password or App Password., flush=True")
     except Exception as e:
-        print(f"Failed to send email: {e}")
+        print(f"Failed to send email: {e}, flush=True")
 
 if __name__ == '__main__':
     app.run(debug=True)
