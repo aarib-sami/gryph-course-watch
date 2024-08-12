@@ -14,9 +14,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install playwright
 RUN playwright install
 
-RUN npx playwright install
-
-
 # Install system dependencies required by Playwright
 RUN apt-get update && \
     apt-get install -y \
