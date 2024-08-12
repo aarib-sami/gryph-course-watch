@@ -1,44 +1,32 @@
 # Use an official Python runtime as a parent image
 FROM python:3.11-slim
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
-# Set the working directory
+# Set the working directory in the container
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update \
-    && apt-get install -y \
-       libnss3 \
-       libx11-dev \
-       libxkbcommon0 \
-       libgtk-3-0 \
-       libdbus-glib-1-2 \
-       libasound2 \
-       libatk-bridge2.0-0 \
-       libatk1.0-0 \
-       libcups2 \
-       libxcomposite1 \
-       libxdamage1 \
-       libxrandr2 \
-       libgbm1 \
-       libpango-1.0-0 \
-       libpangocairo-1.0-0 \
-       libcairo2 \
-       libgdk-pixbuf2.0-0 \
-       libnspr4 \
-    && rm -rf /var/lib/apt/lists/*
+# Copy the requirements file into the container at /app
+COPY requirements.txt .
 
-# Copy the requirements file and install Python dependencies
-COPY requirements.txt /app/
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of your application code
-COPY . /app/
+# Install system dependencies required by Playwright
+RUN apt-get update && \
+    apt-get install -y \
+    libicu-dev \
+    libenchant-2-2 \
+    libsecret-1-dev \
+    libffi-dev \
+    libgles2-mesa-dev \
+    libjpeg-dev \
+    libevent-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Playwright browsers
-RUN playwright install
+# Install Playwright and its dependencies
+RUN pip install playwright && playwright install
 
+# Copy the rest of the application code into the container
+COPY . .
+
+# Command to run the application
 CMD ["gunicorn", "-w", "4", "app:app"]
