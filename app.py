@@ -183,7 +183,7 @@ def send_confirmation_email(email, course_code, section_code, semester):
 
 def send_email_notification(email, course_code, section_code, semester, availability):
     # Prepare the email message
-    msg = MIMEText(f'Seats are now available for the coure: {course_code}, section: {section_code} in the {semester} semester.\n\nAvailability: {availability}')
+    msg = MIMEText(f'Seats are now available for the coure: {course_code}, section: {section_code} in the {semester} semester.\n\nAvailability: {availability}\n\nIf seats become unavailable again, you must sign up again.')
     msg['Subject'] = 'Course Seat Availability Notification'
     msg['From'] = EMAIL_ADDRESS
     msg['To'] = email

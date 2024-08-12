@@ -14,6 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install playwright
 RUN playwright install
 RUN playwright install-deps  
+RUN apt-get install libglib2.0-0\      
 
 # Install system dependencies required by Playwright
 RUN apt-get update && \
@@ -26,9 +27,6 @@ RUN apt-get update && \
     libjpeg-dev \
     libevent-dev \
     && rm -rf /var/lib/apt/lists/*
-
-# Install Playwright and its dependencies
-RUN pip install playwright && playwright install
 
 # Copy the rest of the application code into the container
 COPY . .
