@@ -111,7 +111,7 @@
                       warningMessage.style.display = 'block'; // Show warning message on error
                       setTimeout(() => {
                       warningMessage.style.display = 'none';
-                      }, 5000);  
+                      }, 10000);  
                       semesterDropdown.value = 'Select Semester';
                     } else {
                         sectionDropdown.innerHTML = '<option selected>Select Section</option>';
@@ -159,7 +159,7 @@
                       warningMessage.style.display = 'block'; // Show warning message
                       setTimeout(() => {
                       warningMessage.style.display = 'none';
-                      }, 5000); 
+                      }, 10000); 
                       semesterDropdown.value = 'Select Semester';
                     } else {
                         sections.forEach(section => {
@@ -213,7 +213,7 @@
                 warningMessage1.style.display = 'block';
                 setTimeout(() => {
                 warningMessage1.style.display = 'none';
-                }, 5000);
+                }, 10000);
             } else {
                 alert(data.message || 'Notification setup successful');
             }
