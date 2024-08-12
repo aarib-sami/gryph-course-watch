@@ -25,6 +25,8 @@ RUN apt-get update && \
 # Install Playwright and its dependencies
 RUN pip install playwright && playwright install
 
+RUN playwright install-deps 
+
 # Copy the rest of the application code into the container
 COPY . .
 
