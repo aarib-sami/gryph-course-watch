@@ -81,7 +81,7 @@ def fetch_course_sections(course_code, selected_semester):
         
         try:
             # Attempt to find and click the button
-            page.wait_for_selector(button_selector, state='visible', timeout=5000)
+            page.wait_for_selector(button_selector, state='visible', timeout=30000)
             page.click(button_selector)
         except PlaywrightTimeoutError:
             browser.close()
@@ -90,7 +90,7 @@ def fetch_course_sections(course_code, selected_semester):
         # Wait for the section items to be loaded
         try:
             # Attempt to find sections
-            page.wait_for_selector('ul[data-bind="foreach: Sections"]', timeout=5000)
+            page.wait_for_selector('ul[data-bind="foreach: Sections"]', timeout=30000)
         except PlaywrightTimeoutError:
             browser.close()
             return sectionsList
@@ -126,11 +126,11 @@ def check_seat_availability(course_code, section_code, selectedSemester):
         
         # Wait for the button to be clickable and click it
         button_selector = f'#collapsible-view-available-sections-for-{escaped_course_code}-groupHeading'
-        page.wait_for_selector(button_selector, state='visible', timeout=5000)
+        page.wait_for_selector(button_selector, state='visible', timeout=30000)
         page.click(button_selector)
 
         # Wait for the section items to be loaded
-        page.wait_for_selector('ul[data-bind="foreach: Sections"]', timeout=10000)
+        page.wait_for_selector('ul[data-bind="foreach: Sections"]', timeout=30000)
         
         # Find the semester text
         sectionSemester = page.query_selector_all('h4[data-bind="text: $data.Term.Description()"]')
