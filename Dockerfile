@@ -41,8 +41,5 @@ COPY . /app/
 # Install Playwright browsers
 RUN playwright install
 
-# Expose the port your application will run on
-EXPOSE 0000
-
 # Command to run the application
-CMD ["gunicorn", "-b", "0.0.0.0:8000", "app:app"]
+CMD ["gunicorn", "-w", "4", "app:app"]
