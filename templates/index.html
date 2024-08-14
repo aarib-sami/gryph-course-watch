@@ -87,7 +87,7 @@
 
         if (semester === 'Select Semester') {
           document.getElementById('course-code').value = "";
-          document.getElementById('section-dropdown').innerHTML = '<option selected>Select Section</option>';
+          document.getElementById('section-dropdown').value = 'Select Section';
           document.getElementById('email').value = "";
 
           document.getElementById('course-code').disabled = true;
@@ -97,43 +97,6 @@
           document.getElementById('course-code').disabled = false;
           document.getElementById('section-dropdown').disabled = false;
           document.getElementById('email').disabled = false;
-
-          if (/.*\*\d{4}$/.test(courseCode)) {
-            loadingSpinner.style.display = 'block';
-            sectionDropdown.disabled = true;
-            warningMessage.style.display = 'none'; // Hide warning message initially
-            document.getElementById('course-code').disabled = true;
-
-            fetch(`/sections?course_code=${courseCode}&selectedSemester=${semester}`)
-                .then(response => response.json())
-                .then(sections => {
-                    if (sections.length) {
-                      warningMessage.style.display = 'block'; // Show warning message on error
-                      setTimeout(() => {
-                      warningMessage.style.display = 'none';
-                      }, 10000);  
-                      semesterDropdown.value = 'Select Semester';
-                    } else {
-                        sectionDropdown.innerHTML = '<option selected>Select Section</option>';
-                        sections.forEach(section => {
-                            const option = document.createElement('option');
-                            option.value = section;
-                            option.textContent = section;
-                            sectionDropdown.appendChild(option);
-                        });
-                        sectionDropdown.disabled = false;
-                       
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching sections:', error);
-                    
-                })
-                .finally(() => {
-                    loadingSpinner.style.display = 'none';
-                    document.getElementById('course-code').disabled = false;
-                });
-          }
         }
         checkFields();
       });
@@ -157,10 +120,14 @@
                 .then(sections => {
                     if (sections.length === 0) {
                       warningMessage.style.display = 'block'; // Show warning message
+                      document.getElementById('course-code').value = "";
+                      document.getElementById('course-code').disabled = true 
+                      document.getElementById('semester-dropdown').value = 'Select Semester';
+                      document.getElementById('email').value = "";
+                      document.getElementById('email').disabled = true;
                       setTimeout(() => {
                       warningMessage.style.display = 'none';
                       }, 10000); 
-                      semesterDropdown.value = 'Select Semester';
                     } else {
                         sections.forEach(section => {
                             const option = document.createElement('option');
@@ -176,13 +143,8 @@
                 })
                 .finally(() => {
                     loadingSpinner.style.display = 'none';
-                    document.getElementById('course-code').disabled = false;
                 });
-        } else {
-            sectionDropdown.innerHTML = '<option selected>Select Section</option>';
-            sectionDropdown.disabled = true;
-            loadingSpinner.style.display = 'none';
-        }
+        } 
         checkFields();
       });
 
@@ -211,6 +173,14 @@
         .then(data => {
             if (data.error) {
                 warningMessage1.style.display = 'block';
+                document.getElementById('course-code').value = "";
+                document.getElementById('section-dropdown').innerHTML = '<option selected>Select Section</option>';
+                document.getElementById('email').value = "";
+
+                document.getElementById('course-code').disabled = true;
+                document.getElementById('section-dropdown').disabled = true;
+                document.getElementById('email').disabled = true;
+                
                 setTimeout(() => {
                 warningMessage1.style.display = 'none';
                 }, 10000);
@@ -222,6 +192,9 @@
             document.getElementById('section-dropdown').innerHTML = '<option selected>Select Section</option>';
             document.getElementById('email').value = '';
             document.getElementById('semester-dropdown').value = 'Select Semester';
+            document.getElementById('course-code').disabled = true;
+            document.getElementById('section-dropdown').disabled = true;
+            document.getElementById('email').disabled = true;
         })
         .catch(error => {
             console.error('Error:', error);
