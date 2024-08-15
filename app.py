@@ -13,8 +13,8 @@ from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeo
 
 load_dotenv()
 
-EMAIL_ADDRESS = os.environ.get('EMAIL_ADDRESS')
-EMAIL_PASSWORD = os.environ.get('EMAIL_PASSWORD')
+EMAIL_ADDRESS = os.getenv('EMAIL_ADDRESS')
+EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
 
 app = Flask(__name__)
 
@@ -115,7 +115,6 @@ def fetch_course_sections(course_code, selected_semester):
 
 def check_seat_availability(course_code, section_code, selectedSemester):
     url = f'https://colleague-ss.uoguelph.ca/Student/Courses/Search?keyword={course_code}'
-
     # Escape the special characters in the course code for the CSS selector
     escaped_course_code = escape_css_selector(course_code)
     
@@ -175,15 +174,15 @@ def send_confirmation_email(email, course_code, section_code, semester):
             server.starttls()  # Upgrade the connection to a secure encrypted SSL/TLS connection
             server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)  
             server.send_message(msg)  # Send the email message
-        print("Confirmation email sent successfully", flush=True)
+        print("Confirmation email sent successfully")
     except smtplib.SMTPAuthenticationError:
-        print("Failed to authenticate. Check your email and password or App Password.", flush=True)
+        print("Failed to authenticate. Check your email and password or App Password.")
     except Exception as e:
-        print(f"Failed to send confirmation email: {e}, flush=True")
+        print(f"Failed to send confirmation email: {e}")
 
 def send_email_notification(email, course_code, section_code, semester, availability):
     # Prepare the email message
-    msg = MIMEText(f'Seats are now available for the course: {course_code}, section: {section_code} in the {semester} semester.\n\nAvailability: {availability}\n\nIf seats become unavailable again, you must sign up again.')
+    msg = MIMEText(f'Seats are now available for the course: {course_code}, section: {section_code} in the {semester} semester.\n\nAvailability: {availability}')
     msg['Subject'] = 'Course Seat Availability Notification'
     msg['From'] = EMAIL_ADDRESS
     msg['To'] = email
@@ -194,11 +193,11 @@ def send_email_notification(email, course_code, section_code, semester, availabi
             server.starttls()  # Upgrade the connection to a secure encrypted SSL/TLS connection
             server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)  
             server.send_message(msg)  
-        print("Email sent successfully, flush=True")
+        print("Email sent successfully")
     except smtplib.SMTPAuthenticationError:
-        print("Failed to authenticate. Check your email and password or App Password., flush=True")
+        print("Failed to authenticate. Check your email and password or App Password.")
     except Exception as e:
-        print(f"Failed to send email: {e}, flush=True")
+        print(f"Failed to send email: {e}")
 
 if __name__ == '__main__':
     app.run(debug=True)
