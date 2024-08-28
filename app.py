@@ -9,14 +9,17 @@ from dotenv import load_dotenv
 from playwright.sync_api import sync_playwright
 import re
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
-
+from flask_sqlalchemy import SQLAlchemy
 
 load_dotenv()
-
 EMAIL_ADDRESS = os.getenv('EMAIL_ADDRESS')
 EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
 
 app = Flask(__name__)
+# Add DataBase
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///courses.db'
+db = SQLAlchemy(app)
+
 
 @app.route('/')
 def index():
